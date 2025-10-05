@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore')
 
 # Configure Streamlit page
 st.set_page_config(
-    page_title="NASA Exoplanet Detection Hub",
+    page_title="ExoLume - NASA Exoplanet Detection",
     page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -80,7 +80,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 class NASAExoplanetDetectionUI:
-    """Main UI class for NASA Exoplanet Detection"""
+    """Main UI class for ExoLume - NASA Exoplanet Detection"""
     
     def __init__(self):
         self.models = {}
@@ -179,10 +179,10 @@ class NASAExoplanetDetectionUI:
     
     def create_header(self):
         """Create main header"""
-        st.markdown('<h1 class="main-header">🚀 NASA Exoplanet Detection Hub</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 class="main-header">🚀 ExoLume - NASA Exoplanet Detection</h1>', unsafe_allow_html=True)
         st.markdown("""
         <div style="text-align: center; padding: 10px; background: #f8f9fa; border-radius: 10px; margin-bottom: 30px;">
-            <h3>🌟 Advanced Multi-Mission Exoplanet Classification System</h3>
+            <h3>🌟 ExoLume: Advanced Multi-Mission Exoplanet Classification</h3>
             <p><strong>Kepler • TESS • K2</strong> | Machine Learning Models | Real-time Prediction</p>
         </div>
         """, unsafe_allow_html=True)
@@ -190,7 +190,7 @@ class NASAExoplanetDetectionUI:
     def create_sidebar(self):
         """Create enhanced sidebar"""
         with st.sidebar:
-            st.image("https://via.placeholder.com/300x100/1e3c72/ffffff?text=NASA+EXOPLANET", width=300)
+            st.image("Exolume.png", width=100)
             
             st.markdown("### 🎯 Project Overview")
             st.markdown("""
@@ -859,7 +859,7 @@ class NASAExoplanetDetectionUI:
         
         with col1:
             st.markdown("""
-            ### 🚀 NASA Exoplanet Detection Hub
+            ### 🚀 ExoLume - NASA Exoplanet Detection Platform
             
             This application represents a comprehensive machine learning solution for exoplanet detection using official NASA datasets from three major space missions:
             
@@ -983,7 +983,7 @@ class NASAExoplanetDetectionUI:
         st.markdown("---")
         st.markdown("""
         <div style="text-align: center; color: #666; padding: 20px;">
-            🚀 NASA Exoplanet Detection Hub | Built with ❤️ for NASA Space Apps Challenge 2024
+            🚀 ExoLume - NASA Exoplanet Detection | Built with ❤️ for NASA Space Apps Challenge 2024
         </div>
         """, unsafe_allow_html=True)
 
