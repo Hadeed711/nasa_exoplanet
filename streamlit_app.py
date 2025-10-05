@@ -157,7 +157,7 @@ class NASAExoplanetDetectionUI:
                 'features': 127,
                 'key_discoveries': 'Over 4,000 exoplanet candidates',
                 'method': 'Transit photometry',
-                'target_column': 'target'
+                'target_column': 'target_name'
             },
             'TESS': {
                 'description': 'Transiting Exoplanet Survey Satellite (2018-present)',
@@ -165,7 +165,7 @@ class NASAExoplanetDetectionUI:
                 'features': 84,
                 'key_discoveries': 'All-sky exoplanet survey',
                 'method': 'Transit photometry with wide-field view',
-                'target_column': 'target'
+                'target_column': 'target_name'
             },
             'K2': {
                 'description': 'K2 Extended Mission (2014-2018)',
@@ -620,7 +620,7 @@ class NASAExoplanetDetectionUI:
                 
         except Exception as e:
             st.error(f"Prediction failed: {str(e)}")
-            st.info("Note: This is a demo interface. Feature preprocessing pipeline needed for production.")
+            st.warning("⚠️ IMPORTANT: This demo uses raw input values. Production requires preprocessing pipeline (scaling, feature engineering, etc.)")
     
     def get_feature_unit(self, feature: str) -> str:
         """Get unit for feature"""
