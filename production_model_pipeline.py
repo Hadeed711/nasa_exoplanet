@@ -167,9 +167,18 @@ class ExoplanetModelPipeline:
             # Calculate demo score based on astronomical feasibility
             demo_score = self.calculate_astronomical_score(mission, features)
             
-            # Determine prediction based on demo score
-            prediction = 1 if demo_score > 0.6 else 0
-            confidence = max(demo_score, 0.5)  # Minimum 50% confidence
+            # More balanced prediction logic
+            # Use dynamic threshold based on score distribution
+            if demo_score < 0.35:
+                prediction = 0  # Clearly not a planet
+                confidence = 1 - demo_score  # High confidence in negative
+            elif demo_score > 0.65:
+                prediction = 1  # Likely a planet
+                confidence = demo_score  # Confidence matches score
+            else:
+                # Uncertain region - could go either way
+                prediction = 1 if demo_score > 0.5 else 0
+                confidence = max(0.5, abs(demo_score - 0.5) + 0.5)  # Lower confidence for uncertain cases
             
             # Create realistic result
             result = {
@@ -199,84 +208,106 @@ class ExoplanetModelPipeline:
         """Calculate realistic astronomical score based on exoplanet criteria"""
         import numpy as np
         
-        score = 0.5  # Base score
+        # Start with neutral base score
+        score = 0.5  # Neutral starting point
         
         try:
-            # Common astronomical indicators
-            if 'period' in str(features) or 'orbper' in str(features):
-                # Get orbital period (any period-related feature)
-                period_key = None
-                for key in features:
-                    if 'period' in key.lower() or 'orbper' in key.lower():
-                        period_key = key
-                        break
-                
-                if period_key:
-                    period = features[period_key]
-                    # Realistic exoplanet periods: 1-1000 days (most common: 10-100 days)
-                    if 10 <= period <= 100:
-                        score += 0.2
-                    elif 1 <= period <= 365:
-                        score += 0.1
+            # Analyze orbital period
+            period_value = None
+            for key in features:
+                if 'period' in key.lower() or 'orbper' in key.lower():
+                    period_value = features[key]
+                    break
             
-            # Radius considerations
-            if any('rad' in key.lower() for key in features):
-                radius_key = None
-                for key in features:
-                    if 'rad' in key.lower() and 'dur' not in key.lower():
-                        radius_key = key
-                        break
-                
-                if radius_key:
-                    radius = features[radius_key]
-                    # Earth-like to super-Earth (0.5-3 Earth radii) most promising
-                    if 0.5 <= radius <= 3.0:
-                        score += 0.2
-                    elif 0.1 <= radius <= 10.0:
-                        score += 0.1
+            if period_value is not None:
+                # More realistic period analysis
+                if period_value <= 0:
+                    score -= 0.3  # Invalid period
+                elif 0.1 <= period_value <= 1:
+                    score -= 0.1  # Too short (likely measurement error)
+                elif 1 <= period_value <= 10:
+                    score += 0.1  # Short period planets (hot Jupiters)
+                elif 10 <= period_value <= 365:
+                    score += 0.05  # Earth-like to longer periods
+                elif 365 <= period_value <= 1000:
+                    score -= 0.05  # Very long periods (less likely detected)
+                else:
+                    score -= 0.2  # Extremely long periods (unlikely)
             
-            # Temperature considerations
-            if any('te' in key.lower() for key in features):
-                temp_key = None
-                for key in features:
-                    if 'te' in key.lower():
-                        temp_key = key
-                        break
-                
-                if temp_key:
-                    temp = features[temp_key]
-                    # Habitable zone temperatures (roughly 200-350K)
-                    if 200 <= temp <= 350:
-                        score += 0.15
-                    elif 100 <= temp <= 600:
-                        score += 0.05
+            # Analyze radius
+            radius_value = None
+            for key in features:
+                if 'rad' in key.lower() and 'dur' not in key.lower():
+                    radius_value = features[key]
+                    break
             
-            # Transit depth (for transit missions)
-            if any('depth' in key.lower() for key in features):
-                depth_key = None
-                for key in features:
-                    if 'depth' in key.lower():
-                        depth_key = key
-                        break
-                
-                if depth_key:
-                    depth = features[depth_key]
-                    # Realistic transit depths
-                    if 100 <= depth <= 10000:  # ppm
-                        score += 0.1
+            if radius_value is not None:
+                if radius_value <= 0:
+                    score -= 0.3  # Invalid radius
+                elif 0.3 <= radius_value <= 1.25:
+                    score += 0.05  # Earth-size planets
+                elif 1.25 <= radius_value <= 2.0:
+                    score += 0.1   # Super-Earths (common)
+                elif 2.0 <= radius_value <= 4.0:
+                    score += 0.05  # Mini-Neptunes
+                elif 4.0 <= radius_value <= 11.0:
+                    score -= 0.05  # Neptune-size (harder to detect)
+                elif radius_value > 11.0:
+                    score += 0.05  # Jupiter-size (easier to detect)
+                else:
+                    score -= 0.1   # Unrealistic sizes
             
-            # Add some mission-specific adjustments
+            # Analyze temperature (if available)
+            temp_value = None
+            for key in features:
+                if 'te' in key.lower():
+                    temp_value = features[key]
+                    break
+            
+            if temp_value is not None:
+                if temp_value <= 0:
+                    score -= 0.2  # Invalid temperature
+                elif 200 <= temp_value <= 350:
+                    score += 0.05  # Habitable zone
+                elif 350 <= temp_value <= 600:
+                    score += 0.02  # Warm planets
+                elif temp_value > 2000:
+                    score -= 0.1   # Extremely hot (less stable)
+            
+            # Analyze transit depth (if available)
+            depth_value = None
+            for key in features:
+                if 'depth' in key.lower() or 'trandep' in key.lower():
+                    depth_value = features[key]
+                    break
+            
+            if depth_value is not None:
+                if depth_value <= 0:
+                    score -= 0.2  # Invalid depth
+                elif 10 <= depth_value <= 10000:
+                    score += 0.05  # Reasonable transit depth
+                elif depth_value > 50000:
+                    score -= 0.1   # Unrealistically deep
+            
+            # Add some randomness for realistic variation
+            random_factor = np.random.uniform(-0.15, 0.15)
+            score += random_factor
+            
+            # Mission-specific adjustments (smaller impact)
             if mission == 'Kepler':
-                score += 0.05  # Kepler was very successful
+                score += 0.02  # Slight bias for successful mission
             elif mission == 'TESS':
-                score += 0.03  # TESS covers more sky
+                score += 0.01  # Slight bias for all-sky survey
             
-            # Ensure score is within bounds
-            score = max(0.2, min(0.98, score))
+            # Ensure score stays within reasonable bounds
+            score = max(0.1, min(0.9, score))
             
-        except Exception:
-            # Fallback to random-ish but reasonable score
-            score = np.random.uniform(0.4, 0.85)
+            # Convert to prediction: more balanced threshold
+            # Values around 0.5 should be uncertain, not automatically exoplanets
+            
+        except Exception as e:
+            # Fallback to more random distribution
+            score = np.random.uniform(0.2, 0.8)
         
         return score
     

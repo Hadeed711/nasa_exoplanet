@@ -282,6 +282,7 @@ class NASAExoplanetDetectionUI:
         # Create input form
         with st.form(f"{mission}_prediction_form"):
             st.markdown("#### 🌟 Enter Astronomical Parameters")
+            st.info("💡 **No input restrictions** - Enter any values to test the model's response to diverse astronomical data!")
             
             feature_values = {}
             
@@ -294,17 +295,14 @@ class NASAExoplanetDetectionUI:
                     if info['type'] == 'float':
                         feature_values[feature] = st.number_input(
                             f"{info['label']}",
-                            min_value=info.get('min_value', 0.0),
-                            max_value=info.get('max_value', 1000000.0),
                             value=info.get('default', 1.0),
-                            step=info.get('step', 0.1),
+                            step=0.01,
+                            format="%.4f",
                             help=info.get('description', f"{feature} parameter")
                         )
                     elif info['type'] == 'int':
                         feature_values[feature] = st.number_input(
                             f"{info['label']}",
-                            min_value=info.get('min_value', 0),
-                            max_value=info.get('max_value', 10000),
                             value=info.get('default', 1),
                             step=1,
                             help=info.get('description', f"{feature} parameter")
@@ -326,48 +324,36 @@ class NASAExoplanetDetectionUI:
                 'label': 'Orbital Period (days)',
                 'type': 'float',
                 'default': 10.0,
-                'min_value': 0.1,
-                'max_value': 1000.0,
                 'description': 'Time for one complete orbit around the host star'
             },
             'koi_prad': {
                 'label': 'Planet Radius (Earth radii)',
                 'type': 'float',
                 'default': 2.0,
-                'min_value': 0.1,
-                'max_value': 50.0,
                 'description': 'Radius of the planet in Earth radii'
             },
             'koi_dor': {
                 'label': 'Distance/Star Radius Ratio',
                 'type': 'float',
                 'default': 15.0,
-                'min_value': 1.0,
-                'max_value': 1000.0,
                 'description': 'Semi-major axis divided by stellar radius'
             },
             'koi_duration': {
                 'label': 'Transit Duration (hours)',
                 'type': 'float',
                 'default': 3.0,
-                'min_value': 0.1,
-                'max_value': 24.0,
                 'description': 'Duration of planetary transit'
             },
             'koi_depth': {
                 'label': 'Transit Depth (ppm)',
                 'type': 'float',
                 'default': 1000.0,
-                'min_value': 1.0,
-                'max_value': 100000.0,
                 'description': 'Depth of transit in parts per million'
             },
             'koi_teq': {
                 'label': 'Equilibrium Temperature (K)',
                 'type': 'float',
                 'default': 300.0,
-                'min_value': 100.0,
-                'max_value': 3000.0,
                 'description': 'Equilibrium temperature of the planet'
             }
         }
@@ -379,48 +365,36 @@ class NASAExoplanetDetectionUI:
                 'label': 'Orbital Period (days)',
                 'type': 'float',
                 'default': 10.0,
-                'min_value': 0.1,
-                'max_value': 1000.0,
                 'description': 'Orbital period of the planet'
             },
             'pl_rade': {
                 'label': 'Planet Radius (Earth radii)',
                 'type': 'float',
                 'default': 2.0,
-                'min_value': 0.1,
-                'max_value': 50.0,
                 'description': 'Planet radius in Earth radii'
             },
             'pl_trandurh': {
                 'label': 'Transit Duration (hours)',
                 'type': 'float',
                 'default': 3.0,
-                'min_value': 0.1,
-                'max_value': 24.0,
                 'description': 'Transit duration in hours'
             },
             'pl_trandep': {
                 'label': 'Transit Depth (ppm)',
                 'type': 'float',
                 'default': 1000.0,
-                'min_value': 1.0,
-                'max_value': 100000.0,
                 'description': 'Transit depth in parts per million'
             },
             'st_tmag': {
                 'label': 'TESS Magnitude',
                 'type': 'float',
                 'default': 10.0,
-                'min_value': 1.0,
-                'max_value': 20.0,
                 'description': 'TESS magnitude of the host star'
             },
             'st_teff': {
                 'label': 'Stellar Temperature (K)',
                 'type': 'float',
                 'default': 5800.0,
-                'min_value': 2000.0,
-                'max_value': 10000.0,
                 'description': 'Effective temperature of the host star'
             }
         }
@@ -432,48 +406,36 @@ class NASAExoplanetDetectionUI:
                 'label': 'Orbital Period (days)',
                 'type': 'float',
                 'default': 10.0,
-                'min_value': 0.1,
-                'max_value': 1000.0,
                 'description': 'Orbital period of the planet'
             },
             'pl_rade': {
                 'label': 'Planet Radius (Earth radii)',
                 'type': 'float',
                 'default': 2.0,
-                'min_value': 0.1,
-                'max_value': 50.0,
                 'description': 'Planet radius in Earth radii'
             },
             'pl_masse': {
                 'label': 'Planet Mass (Earth masses)',
                 'type': 'float',
                 'default': 5.0,
-                'min_value': 0.1,
-                'max_value': 1000.0,
                 'description': 'Planet mass in Earth masses'
             },
             'pl_dens': {
                 'label': 'Planet Density (g/cm³)',
                 'type': 'float',
                 'default': 3.0,
-                'min_value': 0.1,
-                'max_value': 20.0,
                 'description': 'Planet density in g/cm³'
             },
             'pl_insol': {
                 'label': 'Insolation (Earth flux)',
                 'type': 'float',
                 'default': 100.0,
-                'min_value': 0.1,
-                'max_value': 10000.0,
                 'description': 'Planet insolation in Earth flux units'
             },
             'st_teff': {
                 'label': 'Stellar Temperature (K)',
                 'type': 'float',
                 'default': 5800.0,
-                'min_value': 2000.0,
-                'max_value': 10000.0,
                 'description': 'Effective temperature of the host star'
             }
         }
