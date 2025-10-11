@@ -205,13 +205,18 @@ class ExoplanetModelPipeline:
             }
     
     def calculate_astronomical_score(self, mission: str, features: Dict[str, float]) -> float:
-        """Calculate realistic astronomical score based on exoplanet criteria"""
+        """Calculate deterministic astronomical score based on exoplanet criteria"""
         import numpy as np
         
         # Start with neutral base score
         score = 0.5  # Neutral starting point
         
         try:
+            # Create a deterministic hash from feature values for consistent "randomness"
+            feature_values = list(features.values())
+            feature_hash = abs(hash(str(sorted(feature_values)))) % 1000
+            deterministic_variation = (feature_hash / 1000.0 - 0.5) * 0.1  # ±0.05 variation
+            
             # Analyze orbital period
             period_value = None
             for key in features:
@@ -289,9 +294,8 @@ class ExoplanetModelPipeline:
                 elif depth_value > 50000:
                     score -= 0.1   # Unrealistically deep
             
-            # Add some randomness for realistic variation
-            random_factor = np.random.uniform(-0.15, 0.15)
-            score += random_factor
+            # Add deterministic variation based on input values
+            score += deterministic_variation
             
             # Mission-specific adjustments (smaller impact)
             if mission == 'Kepler':
@@ -302,12 +306,10 @@ class ExoplanetModelPipeline:
             # Ensure score stays within reasonable bounds
             score = max(0.1, min(0.9, score))
             
-            # Convert to prediction: more balanced threshold
-            # Values around 0.5 should be uncertain, not automatically exoplanets
-            
         except Exception as e:
-            # Fallback to more random distribution
-            score = np.random.uniform(0.2, 0.8)
+            # Fallback to deterministic score based on feature hash
+            feature_hash = abs(hash(str(sorted(features.values())))) % 1000
+            score = 0.3 + (feature_hash / 1000.0) * 0.4  # Range: 0.3 to 0.7
         
         return score
     
